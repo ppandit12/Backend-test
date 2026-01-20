@@ -14,9 +14,19 @@ const app = express();
 // Security middleware
 app.use(helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" },
-    contentSecurityPolicy: false // Disabled for simple frontend
+    contentSecurityPolicy: false
 }));
-app.use(cors());
+
+// CORS - Allow all origins for API
+app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: false
+}));
+
+// Handle preflight requests
+app.options('*', cors());
 
 // Body parsing
 app.use(express.json());
