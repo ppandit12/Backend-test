@@ -1,69 +1,39 @@
-// Vercel Serverless Function Entry Point
-require('dotenv').config();
-
-const express = require('express');
+// Simple Vercel Serverless Handler
+const app = require('express')();
 const cors = require('cors');
-const helmet = require('helmet');
 
-const authRoutes = require('../src/routes/auth.routes');
-const boardRoutes = require('../src/routes/board.routes');
-const listRoutes = require('../src/routes/list.routes');
-const cardRoutes = require('../src/routes/card.routes');
-const errorHandler = require('../src/middleware/errorHandler');
+app.use(cors({ origin: '*' }));
+app.use(require('express').json());
 
-const app = express();
-
-// CORS - Allow all origins
-app.use(cors({
-    origin: '*',
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-}));
-
-// Handle preflight
-app.options('*', cors());
-
-// Security
-app.use(helmet({
-    crossOriginResourcePolicy: { policy: "cross-origin" },
-    contentSecurityPolicy: false
-}));
-
-// Body parsing
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// API routes
-app.use('/api/auth', authRoutes);
-app.use('/api/boards', boardRoutes);
-app.use('/api/lists', listRoutes);
-app.use('/api/cards', cardRoutes);
-
-// Root endpoint
-app.get('/', (req, res) => {
-    res.json({ message: 'Trello API is running', status: 'ok' });
-});
-
-// API info
+// Test endpoint
 app.get('/api', (req, res) => {
-    res.json({
-        name: 'Trello-like API',
-        version: '1.0.0',
-        endpoints: {
-            auth: '/api/auth',
-            boards: '/api/boards',
-            lists: '/api/lists',
-            cards: '/api/cards'
-        }
+    res.json({ 
+        name: 'Trello API', 
+        status: 'running',
+        time: new Date().toISOString()
     });
 });
 
-// 404 handler
-app.use((req, res) => {
-    res.status(404).json({ error: 'Endpoint not found', path: req.path });
+app.get('/api/health', (req, res) => {
+    res.json({ status: 'ok' });
 });
 
-// Error handler
-app.use(errorHandler);
+// Auth routes (simplified for testing)
+app.post('/api/auth/login', (req, res) => {
+    res.json({ message: 'Login endpoint works', body: req.body });
+});
+
+app.post('/api/auth/register', (req, res) => {
+    res.json({ message: 'Register endpoint works' });
+});
+
+// Catch all
+app.all('*', (req, res) => {
+    res.status(404).json({ 
+        error: 'Not found', 
+        path: req.path,
+        method: req.method 
+    });
+});
 
 module.exports = app;
