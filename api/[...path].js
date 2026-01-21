@@ -6,6 +6,22 @@ const cors = require('cors');
 app.use(cors({ origin: '*' }));
 app.use(require('express').json());
 
+// Root endpoint
+app.get('/', (req, res) => {
+    res.json({ 
+        name: 'Trello-like API',
+        version: '1.0.0',
+        status: 'running',
+        endpoints: {
+            api: '/api',
+            auth: '/api/auth',
+            boards: '/api/boards',
+            lists: '/api/lists',
+            cards: '/api/cards'
+        }
+    });
+});
+
 // API Info
 app.get('/api', (req, res) => {
     res.json({ name: 'Trello API', status: 'running' });
