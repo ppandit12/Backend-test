@@ -1,10 +1,37 @@
-// Catch-all Vercel Serverless Handler for Express
-const app = require('express')();
-const cors = require('cors');
+// Vercel Serverless Handler - Full API
+require('dotenv').config();
 
-// CORS
-app.use(cors({ origin: '*' }));
-app.use(require('express').json());
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+
+const authRoutes = require('../src/routes/auth.routes');
+const boardRoutes = require('../src/routes/board.routes');
+const listRoutes = require('../src/routes/list.routes');
+const cardRoutes = require('../src/routes/card.routes');
+const errorHandler = require('../src/middleware/errorHandler');
+
+const app = express();
+
+// CORS - Allow all origins
+app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+// Handle preflight
+app.options('*', cors());
+
+// Security
+app.use(helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    contentSecurityPolicy: false
+}));
+
+// Body parsing
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Root endpoint
 app.get('/', (req, res) => {
@@ -27,27 +54,18 @@ app.get('/api', (req, res) => {
     res.json({ name: 'Trello API', status: 'running' });
 });
 
-// Auth routes
-app.post('/api/auth/login', (req, res) => {
-    res.json({ message: 'Login endpoint reached', received: req.body });
+// API routes
+app.use('/api/auth', authRoutes);
+app.use('/api/boards', boardRoutes);
+app.use('/api/lists', listRoutes);
+app.use('/api/cards', cardRoutes);
+
+// 404 handler
+app.use((req, res) => {
+    res.status(404).json({ error: 'Endpoint not found', path: req.path });
 });
 
-app.post('/api/auth/register', (req, res) => {
-    res.json({ message: 'Register endpoint reached' });
-});
-
-app.get('/api/auth/me', (req, res) => {
-    res.json({ message: 'Me endpoint reached' });
-});
-
-// Health check
-app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok' });
-});
-
-// Catch-all 404
-app.all('*', (req, res) => {
-    res.status(404).json({ error: 'Route not found', path: req.path });
-});
+// Error handler
+app.use(errorHandler);
 
 module.exports = app;
