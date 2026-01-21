@@ -13,7 +13,7 @@ const pool = mysql.createPool({
     keepAliveInitialDelay: 0,
     // SSL config for Aiven and other cloud providers
     ssl: process.env.NODE_ENV === 'production' ? {
-        rejectUnauthorized: true
+        rejectUnauthorized: false
     } : false
 });
 
